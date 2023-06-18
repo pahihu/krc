@@ -1,0 +1,1209 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of KRC</TITLE>
+</HEAD><BODY>
+<H1>KRC</H1>
+Section: User Commands  (1)<BR>Updated: 2016-03-31<BR><A HREF="#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+krc - Kent Recursive Calculator
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>krc</B>
+
+[<I>options</I>] [<I>file</I>] [<I>arguments</I>] ...
+<A NAME="lbAD">&nbsp;</A>
+<H2>OPTIONS</H2>
+
+<DL COMPACT>
+<DT><B>-h</B> <I>cells</I><DD>
+Specify the size of the heap.
+On a 32-bit computer, each cell requires
+16 bytes, on a 64-bit computer 32 bytes.
+The default is 128000 cells.
+<DT><B>-d</B> <I>bytes</I><DD>
+Specify the size of the dictionary, or &quot;string space&quot;,
+used to store identifiers, comments and strings.
+The default is 64000 bytes.
+<DT><B>-n</B><DD>
+Don't include the prelude of standard definitions.
+<DT><B>-l</B> <I>lib</I><DD>
+Use <I>lib</I> in place of the prelude.
+<DT><B>-L</B><DD>
+Use a legacy prelude from 1981 in place of the prelude.
+<DT><B>-s</B><DD>
+Load prelude or <I>lib</I> stripped of comments (saves string space).
+<DT><B>-c</B><DD>
+Turn on reduction counting (the same as the <B>/count</B> command).
+<DT><B>-g</B><DD>
+Turn on garbage collector statistics (the same as the <B>/gc</B> command).
+<DT><B>-o</B><DD>
+Turn on the printing of compiled objects (the same as the <B>/object</B> command).
+<DT><B>-z</B><DD>
+Sets base for list indexing to 1 instead of 0 (legacy option).
+<DT><B>-e </B><I>expression[?!]</I><DD>
+Instead of being interactive, evaluate <I>expression</I> and display its
+value (with `?') or flat-print the value (with `!').
+</DL>
+<P>
+
+If a file name is given after the options, its contents will
+be loaded as the <I>current script</I>.
+If you don't give a file name the current script is initially empty.
+<P>
+
+Arguments following the file are permitted only when a <B>-e</B> option
+is present and in this case the file name and any arguments are placed
+in a list of strings called &quot;<B>argv</B>&quot;.
+<A NAME="lbAE">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+Kent Recursive Calculator was one of the earliest higher-order, lazy,
+purely functional programming systems. Written around 1980, it was a
+simplified version of its author's language SASL,
+developed at St Andrews University in 1972-6, and in turn was succeeded
+by Miranda, the main precursor of Haskell. These days it has the
+advantages of being a simple language of this kind capable of running
+in very little memory (75KB code plus whatever space is allocated for
+heap and dictionary).
+<P>
+
+A KRC program is called a <I>script</I>, which consists of
+a sequence of <I>definitions</I> each of which consists of an
+optional comment followed by one or more <I>equations</I>, one per line.
+<P>
+
+When you invoke krc, it loads a set of standard
+definitions called the <I>prelude</I>, then prints a welcome
+message followed by a prompt, <B>krc&gt;</B>.  You have now entered a KRC <I>session</I>.
+In a session you can type commands, expressions to be evaluated, and 
+definitions to be entered in the current script.
+A new prompt appears as each task is completed, until you end the session.
+<A NAME="lbAF">&nbsp;</A>
+<H2>COMMANDS</H2>
+
+The interpreter accepts a range of commands
+to inspect, edit, load and save scripts,
+as well as a few system-oriented things.  Each command is
+entered on a single line, followed by [Enter].
+<P>
+
+The command to inspect a definition, say of `foo', is just the name
+on a line by itself
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;foo
+<BR>
+
+the system responds by displaying the definition associated with
+`foo', which may be in the prelude or in the current script.
+If the definition has more than one equation these are shown
+numbered, from <B>1</B>, the numbers are used when editing definitions.
+<P>
+
+You can display a section of the script, say from 
+the definition of `foo' to `bar' by typing
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;foo&nbsp;..&nbsp;bar
+<BR>
+
+<P>
+
+The other commands all start with a <B>/</B> character.
+<DL COMPACT>
+<DT><B>/</B><DD>
+Displays all of the current script
+<DT><B>/quit</B><DD>
+Ends a KRC session. Shorthand:&nbsp;<B>/q</B>.
+Typing control-D also has this effect.
+</DL>
+<P>
+
+Be aware that ending a session does not automatically save the current
+script, for that you must use <B>/save</B> (see below).
+<P>
+
+In the commands which follow `<I>name</I>' means 
+one of the names defined in the current script;
+<P>
+
+Where it says `<I>name(s)</I>'
+you can put a name, several names separated by
+spaces, or a range 
+<I>foo</I><B>..</B><I>bar</I> which refers to definitions <I>foo</I> through <I>bar</I>
+of the current script,
+or <I>foo</I><B>..</B> which means from the definition of <I>foo</I>
+to the end of the script.
+<P>
+
+Where it says `<I>part(s)</I>', this refers to equation numbers 
+from a definition in the script, for deletion or reordering.
+<P>
+
+A <I>part</I> can be a single number like <B>1</B>,
+a range like <B>2..4</B>, 
+something like <B>4..</B>, which means from 
+equation <B>4</B> to the end of the definition;
+<I>part(s)</I> means a list of these separated by spaces.
+<DL COMPACT>
+<DT><B>/delete</B> <I>name(s)</I><DD>
+Deletes one or more definitions from the script.
+Shorthand:&nbsp;<B>/d</B>
+<BR>
+
+If no 
+<I>names</I> are supplied, it deletes the whole script (<B>beware!</B>).
+<DT><B>/delete</B> <I>name</I> <I>part(s)</I><DD>
+Deletes the numbered equations from the definition of <I>name</I>.
+To delete the comment, enter an empty comment for the same name,
+for example &quot;foo:-;&quot;
+<DT><B>/reorder</B> <I>name</I> <I>name(s)</I><DD>
+Place the definitions of one or more <I>names</I> immediately after those
+for the first mentioned <I>name</I>, in the order shown.
+<DT><B>/reorder</B> <I>name</I> <I>part(s)</I><DD>
+Reorder the equations within a definition by moving the
+numbered equations listed in <I>part(s)</I> to the top of the
+definition, in the order shown.
+<DT><B>/aborder</B><DD>
+Sorts the script's definitions into alphabetical order.
+<DT><B>/rename</B> <I>from</I><B>,</B><I>to</I><DD>
+Change the name `<I>from</I>' into `<I>to</I>', in all
+the places where it is used in the
+script; <I>from</I> and <I>to</I> can both be lists of names
+separated by spaces, in which case the first name in <I>from</I> is
+changed to the first name in <I>to</I> and so on. This allows you
+to swap two or more names in the script without losing any of them.
+<DT><B>/save</B> <I>filename</I><DD>
+Saves the script in the named file.
+If <I>filename</I> is omitted, it saves to the last filename mentioned.
+<DT><B>/get</B> <I>filename</I><DD>
+Adds the contents of a file to the script.
+If <I>filename</I> is omitted, from the last filename mentioned.
+<DT><B>/file</B><DD>
+Shows the current default filename. Shorthand:&nbsp;<B>/f</B>
+<DT><B>/file</B> <I>filename</I><DD>
+Changes the default filename.
+<DT><B>/list</B> <I>filename</I><DD>
+Lists the contents of a disk file, like Unix's &quot;cat&quot; or DOS's &quot;type&quot; commands.
+If the <I>filename</I> is omitted, it reads from the last filename mentioned.
+<DT><B>/dir</B><DD>
+List the filenames in the current directory or folder, like Unix's &quot;ls&quot;
+or DOS's &quot;dir&quot; commands.
+<DT><B>/names</B><DD>
+Displays the names defined in the script.
+<DT><B>/lib</B><DD>
+Displays the names defined in the prelude.
+<DT><B>/openlib</B><DD>
+Allows you to modify the definitions of the prelude (they are normally write-protected).
+Any changes are made to the copy of the definitions held in memory during
+the session - only if you use <B>/save</B> (filename) do they get written to a file.
+<DT><B>/clear</B><DD>
+Clear all memo fields.  When a simple definition in the script is expanded
+i.e. one like <B>foo</B> = STUFF, the value is stored in a memo field for <B>foo</B>
+so STUFF need not be evaluated again. These are cleared automatically when any
+definition in the script is changed.
+<DT><B>/count</B><DD>
+Turns on reduction counting.
+<DT><B>/gc</B><DD>
+Enables the printing of memory usage information each time a
+garbage collection happens.
+<DT><B>/reset</B><DD>
+Turns off reduction counting, garbage collection information 
+and object display (see below).
+<DT><B>/dic</B><DD>
+Report current state of string space.
+<DT><B>/help</B><DD>
+Prints a list of help topics. Shorthand: <B>/h</B>
+<DT><B>/help</B> <I>topic</I><DD>
+Displays the relevant helpfile, using the UNIX command `<B>less</B>'.
+This allows you to move backwards
+(type `b') in the file as well as forwards (type SPACE, or ENTER to move
+forward one line at a time), type `q' to quit.  Say `<B>man&nbsp;1&nbsp;less</B>'
+on the UNIX command line for more details.
+</DL>
+<P>
+
+These last commands are for use in debugging the system:
+<DL COMPACT>
+<DT><B>/object</B><DD>
+Displays the internal representation of each expression before evaluating it.
+<DT><B>/lpm</B><DD>
+The &quot;List Post Mortem&quot; displays the KRC machine's internal state.
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>EXPRESSION EVALUATION</H2>
+
+An <I>expression</I> is a mathematical formula denoting a value. For details
+of what can be in an expression see later sections:
+IDENTIFIERS, DATA TYPES, OPERATORS and ZF EXPRESSIONS.
+To evaluate an expression in a KRC session and print the result
+on the screen, type the expression followed by `<B>?</B>'.
+<P>
+
+For example, you could type <B>2+2?</B> to obtain <B>4</B>.
+<P>
+
+If the value is a data structure it is printed as you would enter it, with
+quote marks around strings,
+square brackets around lists and commas between list elements.
+For example (`++' joins lists together):
+<P>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<B>krc&gt;</B> [1..3]++[&quot;...\n&quot;]++[2*2]?
+<P>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<B>[1,2,3,&quot;...\n&quot;,4]</B>
+<P>
+
+Note that with `<B>?</B>' control characters in a string are shown,
+not obeyed (&quot;\n&quot; means newline).
+<P>
+
+An alternative method of printing uses `<B>!</B>' in place of `<B>?</B>'.
+<P>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<B>krc&gt;</B> [1,2,3,&quot;...\n&quot;,4]!
+<P>
+
+&nbsp;&nbsp;&nbsp;&nbsp;<B>123...
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;4</B>
+<P>
+
+`<B>!</B>' prints strings without quotes, obeying any control characters, numbers
+are printed in the usual way and with lists
+`<B>!</B>' scans left to right, recursively scanning any sublists encountered,
+printing only the atoms (numbers and strings).
+The effect is as if the data were squashed flat and joined up
+into a single string (although `<B>!</B>' does not actually use
+any additional string space).
+<P>
+
+As a general guide `?' (print values to show structure) is used when developing
+and testing functions and `!' (flat-print) for the final output of a program
+where you want to control layout.
+Note that `?' adds a trailing newline while `!' doesn't.
+<P>
+
+The reader may find it helpful to study the function <B>show</B> defined in the
+prelude; 
+<DL COMPACT><DT><DD>
+<B>x?</B>
+</DL>
+
+is actually equivalent to
+<B>show&nbsp;x&nbsp;:&nbsp;[&quot;\n&quot;]!</B>
+<P>
+
+<B>Reminder</B>: For KRC to print the value of an expression it must be followed
+by `<B>?</B>' or `<B>!</B>'.
+<A NAME="lbAH">&nbsp;</A>
+<H2>THE SCRIPT: COMMENTS AND EQUATIONS</H2>
+
+A KRC script consists of a sequence of <I>definitions</I>, each of which
+is composed of an optional <I>comment</I> followed by one or more <I>equations</I>.
+The order of the definitions has no significance as they are all in scope
+throughout the script, but the order of
+the equations within a definition may affect its meaning, as they are tried
+in the order written.
+<P>
+
+A comment is the name, of a function or other data item, followed by the two
+characters &quot;<B>:-</B>&quot; followed by any number of lines of text
+and terminated by the first semicolon &quot;<B>;</B>&quot;.
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;flub :- here is some text
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... explaining &quot;flub&quot;;
+<P>
+
+An equation is one line of a definition and has this form:
+<DL COMPACT><DT><DD>
+<B>LHS = expression</B>
+</DL>
+
+or
+<DL COMPACT><DT><DD>
+<B>LHS = expression, guard</B>
+</DL>
+
+where <B>LHS</B> (&quot;left hand side&quot;) is a
+name optionally followed by formal parameters and <B>expression</B>
+describes the value which the lhs assumes in this case.
+<P>
+
+The optional <B>guard</B> is a Boolean (i.e. truth-valued) expression which determines
+if the equation is applicable. If the guard evaluates to &quot;TRUE&quot;
+the equation is used, otherwise it is not.
+<P>
+
+Note that equations are written one per line
+(no terminating semicolons needed, or allowed).  Examples
+<DL COMPACT><DT><DD>
+radix = 10
+<BR>
+
+girls = [&quot;susan&quot;,&quot;jill&quot;,&quot;pandora&quot;]
+</DL>
+
+are simple definitions.  A simple definition has just a name as its LHS.
+<P>
+
+We can define a function by introducing a formal parameter
+<DL COMPACT><DT><DD>
+sq n = n * n
+</DL>
+
+The formal parameter `n' is a local variable of the equation.  Any name
+can be used as a formal parameter, it does not have to be a single letter.
+However name clashes, like using `sq' as a formal parameter when it
+is also a top-level name, are best avoided (occurences of the name
+on the right of the equation will refer to the formal parameter).
+<P>
+
+Names which appear at the head of an LHS, which to this point are
+`radix', `girls' and `sq', are known as <I>top-level names</I> and have the whole
+script as their scope, as do the names defined in the prelude.  (The scope of 
+a name is the region of text in which it can be used with the same meaning.)
+<P>
+
+Here is a function of two parameters
+<DL COMPACT><DT><DD>
+sqdiff m n = m*m - n*n
+</DL>
+
+We call it by writing e.g.
+<DL COMPACT><DT><DD>
+sqdiff 2 3
+</DL>
+
+not sqdiff(2,3) as you would in some other programming languages.
+<P>
+
+More complex function definitions
+may require several equations, for example
+<DL COMPACT><DT><DD>
+fac 0 = 1
+<BR>
+
+fac n = n * fac(n-1)
+</DL>
+
+defines a factorial function which can then
+be used, for example by writing
+<DL COMPACT><DT><DD>
+fac&nbsp;10?
+</DL>
+
+Note the use of a constant, 0, as formal parameter in the first equation.
+This is one way to do case analysis.
+<P>
+
+Guards can also be used to do case analysis.
+A safer version of `fac' would be:
+<DL COMPACT><DT><DD>
+fac n = 1, n &lt;= 0
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= n * fac(n-1)
+</DL>
+
+Here we use a guard, `n &lt;= 0', to stop `fac' going into a loop on negative numbers.
+Entering an equation with no left hand side
+means that the LHS is the same as in the line previously entered.
+<P>
+
+We have seen that a formal parameter can be a name or a literal constant.
+It can also be a pattern to match list structure as in this example -
+`rotor' carries out a simple rotation on lists of length 3.
+<DL COMPACT><DT><DD>
+rotor [a,b,c] = [b,c,a]
+</DL>
+
+<P>
+
+To match lists of unknown length we use a pattern involving `:',
+for example the functions `hd', `tl', which return the first element
+of a list, and the remainder of the list without the first element, are defined
+<DL COMPACT><DT><DD>
+hd (a:x) = a
+<BR>
+
+tl (a:x) = x
+</DL>
+
+<P>
+
+Another example is this function which copies lists of length &lt;=2 and extracts
+the first 2 elements of lists with length &gt;2.
+<DL COMPACT><DT><DD>
+take2 [] = []
+<BR>
+
+take2 [a] = [a]
+<BR>
+
+take2 (a:b:x) = [a,b]
+</DL>
+
+Note that ':' is right associative so `a:b:x' means `a:(b:x)'.
+<P>
+
+In summary, an LHS consists of the name being defined followed by zero
+or more formal parameters.  Each formal parameter can be 
+<DL COMPACT><DT><DD>
+a <I>name</I> like <B>x</B> or <B>height</B>
+<BR>
+
+a <I>literal</I> number or string like <B>3</B> or <B>&quot;bill&quot;</B>
+<BR>
+
+a <I>pattern</I> like <B>[p,q,r]</B> or <B>(a : x)</B>
+<BR>
+
+where any of the p, q, r, a, x could themselves be a name, literal or pattern.
+</DL>
+
+Names introduced by formal parameters are local to the equation in
+which they appear.
+<P>
+
+An equation with
+one or more patterns in its LHS applies when the actual parameters
+of a function invocation
+match the corresponding formal parameters; that is they have the same list
+structure and, where the pattern contains a literal, the values are equal.
+If there is also a guard, that must evaluate to &quot;TRUE&quot;.
+<P>
+
+Where a definition has more than one equation they must all have the
+same number of formal parameters.  Notwithstanding this, it is possible
+in KRC to define functions which take a variable number of arguments,
+because the right hand sides can be of varying type. (Terminology - 
+the actual parameters of a function are also called its <I>arguments</I>.)
+<P>
+
+KRC supports the interactive development of scripts.
+<P>
+
+To enter definitions in the script during a session you simply type in the
+equations and comments at the prompt, one at a time.  You can then enter
+expressions to test your definitions and edit them (i.e. delete,
+reorder etc) using the COMMANDS listed earlier and re-enter equations as
+needed.  The line editing facilities provided by &quot;linenoise&quot; and/or
+the use of a mouse to cut and paste make this task relatively easy.
+<P>
+
+If you enter an equation with the same LHS and
+guard as an existing one it will replace it.  Entering a comment will replace an
+earlier comment on the same name.  To delete a comment enter an empty replacement
+<DL COMPACT><DT><DD>
+name :-;
+</DL>
+
+<P>
+
+Another way of proceeding is to use an editor to create the script and
+then start a krc session with it as the file.  The 
+KRC system was designed to allow it to be used without a separate editor (back
+in 1980 screen editors like <B>vi</B> and <B>emacs</B> were not widely
+available as they are now).
+<A NAME="lbAI">&nbsp;</A>
+<H2>IDENTIFIERS</H2>
+
+The names used in scripts and expressions are built from
+<B>A-Z</B> <B>a-z</B> <B>0-9</B> underscore (<B>_</B>) and apostrophe (<B>'</B>),
+start with a letter
+and can be of any length.  Case is significant, so X and x are different identifiers.
+Note that KRC has no reserved words.
+<A NAME="lbAJ">&nbsp;</A>
+<H2>DATA TYPES</H2>
+
+KRC has four data types: numbers, strings, lists and functions.
+<P>
+
+The four types of value have the same &quot;civil rights&quot; - any value can be (i) named,
+(ii) included in a list, (iii) passed to a function
+as its argument, (iv) returned by a function as result.
+<P>
+
+There is no static type system - values of different types can be freely mixed, for
+example as elements of a list and a function can accept
+arguments of more than one type and return results of different 
+types for different inputs.  
+Type errors, e.g. trying to multiply two strings, are detected at
+run time.  Languages of this kind (LISP is another example) are often
+called `typeless', but <I>dynamically typed</I> is more accurate.
+<P>
+
+A value can be tested by the four functions `number', `string', `list' and
+`function' and returns &quot;TRUE&quot; for one of these,
+&quot;FALSE&quot; for the others. There is also a function `char' which recognises
+strings of length 1 and a function `bool' which reconises the strings &quot;TRUE&quot; and &quot;FALSE&quot;.
+<P>
+
+<B>Numbers</B> are integers (whole numbers, positive, negative and zero)
+written in the usual decimal notation, e.g. 3 -17 500
+<P>
+
+<B>Strings</B> are sequences of characters enclosed in double quotes, e.g.
+<DL COMPACT><DT><DD>
+&quot;cattle&quot; &quot;oh my!&quot;
+</DL>
+
+<P>
+
+Control characters are written using `\', e.g. &quot;\n&quot; is newline.
+The escape conventions are as in C
+<DL COMPACT><DT><DD>
+\a (bell) \b (backspace) \f (formfeed) \n (newline) \r (carriage return)
+\t (tab) \v (vertical tab) \\&nbsp;(backslash) \' \&quot;
+</DL>
+
+and numeric character codes
+<DL COMPACT><DT><DD>
+\ddd (up to three decimal digits).
+</DL>
+
+KRC character codes are in the range 0-255 (of which 0-127 are ascii,
+the meaning of codes above 127 depends on the <I>locale</I>).
+<P>
+
+Note the strings &quot;TRUE&quot;, &quot;FALSE&quot; are used as truthvalues,
+there is no separate Boolean type.
+<P>
+
+KRC has no separate type `character' distinct from `string'.
+A character is just a string of length 1, e.g. &quot;a&quot;
+(you cannot write this as 'a', that would not be recognised).
+<P>
+
+The prelude function `explode' converts a string into
+a list of characters, e.g. 
+<DL COMPACT><DT><DD>
+<B>krc&gt;</B> explode &quot;hello&quot;?
+<BR>
+
+[&quot;h&quot;,&quot;e&quot;,&quot;l&quot;,&quot;l&quot;,&quot;o&quot;]
+</DL>
+
+<P>
+
+KRC treats strings as atomic; they are stored uniquely in packed
+form.  Strings can be tested for equality or order without unpacking them but
+to access the internal structure you must use `explode'.
+<P>
+
+There is a function `implode' which compresses a list of strings into a
+single string, but this is less often needed.  Processing of textual
+data is typically done on lists of characters (or sometimes trees)
+and given `!' there is no need to convert
+the result back into a single string before printing.
+<P>
+
+<B>Lists</B> are written using square brackets and commas between
+elements, e.g. [1,2,3,&quot;eric&quot;].  Note
+the empty list, [] and singletons, e.g. [3].
+<P>
+
+An important operation on lists is `<B>:</B>' which prefixes an element
+to the front of a list.  So `a:[]' is `[a]', `a:b:[]' is
+`[a,b]' and so on.
+Note also the `<B>++</B>' operator which appends one list to another.  The
+elements  of `x++y' are those of `x' followed by those of `y'.
+<P>
+
+As some, or all, of the elements of a  list can be lists it
+is possible to construct multi-dimensional arrays (as lists of lists of ...)
+and more generally trees, of any shape.
+Lists can be of infinite length, for example
+<DL COMPACT><DT><DD>
+ones = 1 : ones
+</DL>
+
+is an infinite list of ones and
+<DL COMPACT><DT><DD>
+abyss = [&quot;down&quot;,abyss,&quot;up&quot;]
+</DL>
+
+is a tree of infinite depth.  These examples are possible because of KRC's general strategy
+of <I>lazy evaluation</I>, which includes not evaluating the parts of a structure until they are accessed.
+<P>
+
+There is a notation `[a..b]' for a sequence of consecutive integers, e.g. `[-10..10]'
+is a list with 21 elements.  This notation also has an infinite form, e.g. `[2..]'
+is a list of the integers starting at 2.
+<P>
+
+Similarly the notation `[a,b..c]' can be used for an arithmetic sequence running
+from a to c with step (b-a).  E.g. [1,3..99] are the odd numbers from 1 to 99.
+Again this has an infinite form, e.g. [0,-5..]
+<P>
+
+A list can be applied to a non-negative number, n say,
+to extract its n'th element (counting from 0). So given
+<DL COMPACT><DT><DD>
+x = [&quot;mon&quot;,&quot;tue&quot;,&quot;wed&quot;,&quot;thu&quot;,&quot;fri&quot;]
+</DL>
+
+then `x 0' is &quot;mon&quot;, `x 6' is &quot;fri&quot;, and `x 7' is an error.
+A list can therefore be supplied in a context where a function is expected, for example
+as an operand of `.' the functional composition operator.
+<P>
+
+<B>Functions</B>: a function calculates an output
+value from given input value(s).  The rules of calculation are given by its defining equations
+(except for a few built-in functions defined in machine code).
+<P>
+
+Applying a function to its input values (or <I>arguments</I>) is done by juxtaposition, e.g.
+<DL COMPACT><DT><DD>
+f x y
+</DL>
+
+If an argument is an operator expression or another function application
+it needs parentheses to force the correct parse. E.g.
+<DL COMPACT><DT><DD>
+f (g x) (y+2)
+</DL>
+
+<P>
+
+A prefix or infix operator in single quotes
+denotes the corresponding one- or two-argument function, e.g.
+<DL COMPACT><DT><DD>
+ops = ['+', '-', '*', '/']
+</DL>
+
+is a list of the four functions of arithmetic.  See below, under OPERATORS.
+<P>
+
+<I>Continued application</I>: a function application can return a function,
+e.g. (ops n) is a function, which one depends on `n'.
+We can immediately apply this to its arguments, thus
+<DL COMPACT><DT><DD>
+ops n x y
+</DL>
+
+We could write `(ops n) x y' but the parentheses are not needed as
+function application is <I>left associative</I>.
+<P>
+
+<I>Partial application</I>: a function of two or more arguments
+can be applied to a smaller number of arguments and
+the result is a function that is waiting for the remaining arguments.
+For example
+<DL COMPACT><DT><DD>
+double = '*' 2
+</DL>
+
+is a function that can be applied to a number and will multiply it by 2.
+<P>
+
+Partial application works because KRC uses a model of functions
+derived from <I>combinatory logic</I>.  In this model, all functions
+actually take a single argument.  An n-ary function, for n&gt;1, is a
+function that, when applied to its argument, returns an (n-1)ary
+function that is waiting for the next argument. So taking the case
+n=3 as an example
+<DL COMPACT><DT><DD>
+<B>f a b c</B>
+</DL>
+
+means
+<DL COMPACT><DT><DD>
+<B>((f a) b) c</B>
+</DL>
+
+but because of the left-associative rule the parentheses are normally omitted.
+<A NAME="lbAK">&nbsp;</A>
+<H2>OPERATORS</H2>
+
+The following table lists KRC's prefix and infix operators in order of increasing binding
+power.
+<P>
+
+The second column gives associativity:- a left associative operator, e.g. `-' has
+<DL COMPACT><DT><DD>
+<B>a - b - c</B> &nbsp;==&gt; &nbsp;<B>(a - b) - c</B>
+</DL>
+
+while a right associative operator, e.g. `++' has
+<DL COMPACT><DT><DD>
+<B>a ++ b ++ c</B> &nbsp;==&gt; &nbsp;<B>a ++ (b ++ c)</B>
+</DL>
+
+Infix operators in the same row have the same binding power and are jointly
+right or left associative.
+<P>
+
+The third column gives a brief statement of meaning.
+Where needed the notes below add further detail.
+<TABLE>
+<TR VALIGN=top><TD><B>operator</B></TD><TD><B>associativity</B></TD><TD><B>meaning</B><BR></TD></TR>
+<TR VALIGN=top><TD>:  ++  --</TD><TD>right</TD><TD>list prefix, append, listdiff<BR></TD></TR>
+<TR VALIGN=top><TD>|</TD><TD>right</TD><TD>logical <I>or</I><BR></TD></TR>
+<TR VALIGN=top><TD>&amp;</TD><TD>right</TD><TD>logical <I>and</I><BR></TD></TR>
+<TR VALIGN=top><TD>\prefix</TD><TD>logical <I>not</I></TD><TD><BR></TD></TR>
+<TR VALIGN=top><TD>&gt; &gt;= \= == &lt;= &lt;</TD><TD>see below</TD><TD>comparisons<BR></TD></TR>
+<TR VALIGN=top><TD>+ -</TD><TD>left</TD><TD>add, subtract<BR></TD></TR>
+<TR VALIGN=top><TD>+ -</TD><TD>prefix</TD><TD>plus, minus<BR></TD></TR>
+<TR VALIGN=top><TD>* / %</TD><TD>left</TD><TD>multiply, integer divide, remainder<BR></TD></TR>
+<TR VALIGN=top><TD>** .</TD><TD>right</TD><TD>exponent, function-compose<BR></TD></TR>
+<TR VALIGN=top><TD>#</TD><TD>prefix</TD><TD>length of list<BR></TD></TR>
+</TABLE>
+
+<P>
+
+The application of a function to its arguments binds more tightly<BR>
+than any operator.  Parentheses <B>(...)</B> can be inserted freely
+in expressions to enforce the intended parse or to make it clearer to the reader
+- redundant parentheses do not change the meaning (this is true both in expressions
+and in formal parameters).
+<P>
+
+The operators <B>:</B> (prefix) and <B>++</B>
+(append) have been discussed earlier, in the section on DATA TYPES.
+The expression <B>x -- y</B> returns a list of the elements of <B>x</B> without
+those that appear in <B>y</B>, the exact definition is given by the 
+prelude function <B>listdiff</B>.
+<P>
+
+The logical operators <B>|</B>, <B>&amp;</B> do not evaluate their second operand
+if this is not needed.
+<DL COMPACT><DT><DD>
+<B>a&nbsp;|&nbsp;b</B>
+</DL>
+
+returns &quot;TRUE&quot; if <B>a</B> is &quot;TRUE&quot;, otherwise it returns <B>b</B>.
+Similarly
+<DL COMPACT><DT><DD>
+<B>a&nbsp;&amp;&nbsp;b</B>
+</DL>
+
+returns &quot;FALSE&quot; if <B>a</B> is &quot;FALSE&quot;, otherwise it returns <B>b</B>.
+<P>
+
+The relational operators <B>&gt;</B>, <B>&gt;=</B>, <B>==</B>, <B>&lt;=</B>, <B>&lt;</B> have a special syntax which allows
+continued relations, as commonly used in mathematics books.  For example
+<DL COMPACT><DT><DD>
+<B>0 &lt;= x &lt;= 10</B> &nbsp;means &nbsp;<B>0 &lt;= x &amp; x &lt;= 10</B>
+<BR>
+
+<B>a == b == c &lt; 0</B> &nbsp;means &nbsp;<B>a == b &amp; b == c &amp; c &lt; 0</B>
+</DL>
+
+<P>
+
+The operators <B>==</B> and <B>\=</B> can be used to test for equality or inequality
+on any pair of values, returning &quot;TRUE&quot; or &quot;FALSE&quot;. Values of different types
+are always unequal.  Two lists count as equal if and only if they are of the
+same length and (recursively for sublists) corresponding elements are equal.
+<P>
+
+Equality tests between functions give unpredictable results and should 
+not be used.
+(Example: `<B>map&nbsp;==&nbsp;map</B>' has value &quot;TRUE&quot; but
+`<B>map&nbsp;abs&nbsp;==&nbsp;map&nbsp;abs</B>' is &quot;FALSE&quot;.)
+<P>
+
+The order testing operators <B>&gt; &gt;= &lt;= &lt;</B> work on numbers in the usual way and
+on strings compare according to the C function <I>strcmp()</I>.  For
+words all in upper case, or all in lower case, this amounts to dictionary order,
+but be aware that upper case letters
+precede lower case letters, so &quot;ZEBRA&quot;&nbsp;&lt;&nbsp;&quot;ant&quot;. It is an error to test
+lists or functions for order, or two values of different type.
+<P>
+
+<B> + - * /</B> are the usual arithmetic operations, with <B>%</B> for remainder.
+KRC arithmetic deals only with integers thus `<B>/</B>' discards the
+fractional part, rounding towards <B>0</B>, while
+<B>a % b</B> takes the remainder on dividing `<B>a</B>' by `<B>b</B>',
+the sign of the result being that of `<B>a</B>' (these rules
+for integer division and remainder are the same as C).
+<P>
+
+Prefix `<B>-</B>' reverses the sign of its integer operand (leaving <B>0</B> unchanged).
+A negative constant like `<B>-1</B>' is, syntactically, an operator
+expression and must be parenthesised when passed to a function, thus
+`<B>f(-1)</B>' whereas `<B>f&nbsp;-1</B>' would attempt to subtract <B>1</B>
+from <B>f</B>. Prefix `<B>+</B>' does nothing and is discarded.
+<P>
+
+<B>a ** b</B> raises `<B>a</B>' to the power of `<B>b</B>' which must be
+non-negative.
+<P>
+
+The composition of two functions `<B>f&nbsp;.&nbsp;g</B>' is defined as follows
+<DL COMPACT><DT><DD>
+<B>(f . g) x &nbsp;= &nbsp;f (g x)</B>
+</DL>
+
+<P>
+
+The operator <B>#</B> gives the length of a list, for example `<B>#[1,2,3]</B>'
+is <B>3</B>.  To find the length of a string use the prelude function
+<B>printwidth</B>.
+<P>
+
+A prefix or infix operator in <I>single quotes</I> denotes the corresponding one-
+or two-argument function.  For example <B>&#180;+&#180;</B> is the addition function
+and <B>&#180;#&#180;</B> and <B>&#180;\&#180;</B> are functions
+which take the length of a list and the negation of a truthvalue.
+Note that <B>&#180;-&#180;</B>
+is subtraction, for unary minus you can use the prelude function <B>neg</B>.
+<A NAME="lbAL">&nbsp;</A>
+<H2>ZF EXPRESSIONS</H2>
+
+ZF expressions are a notation to generate lists from other lists.
+(These would now called <I>list comprehensions</I>, a
+term coined by Phil Wadler in 1985.)
+<P>
+
+We start with some simple examples
+<DL COMPACT><DT><DD>
+<B>{n*n; n&lt;-[1..]}</B>
+</DL>
+
+is a list of all square numbers [1,4,9,16,25...].  The expression before
+`;' is the <I>body</I> of the ZF expression while `n&lt;-[1..]' is called
+a <I>generator</I> and `n' is a local variable of the ZF expression.  The effect
+is to create a list of the values taken by the body for each value of `n'
+drawn from the list given in its generator.
+<P>
+
+The next example is a function for finding the factors of a number
+<DL COMPACT><DT><DD>
+<B>factors n = {r; r&lt;-[1..n/2]; n%r==0}</B>
+</DL>
+
+This makes a list of the numbers between 1 and n/2 which divide n exactly.
+The expression after the second semicolon is called a <I>filter</I> - only
+those values of the generator are used for which the filter is &quot;TRUE&quot;.
+<P>
+
+A ZF expression can have two or more generators, so
+<DL COMPACT><DT><DD>
+<B>{a+b; a&lt;-[1,2,3]; b&lt;-[10,20,30]}</B>
+</DL>
+
+gives you a list of nine two-digit numbers.
+<P>
+
+Our last example finds
+all positions on a chess board which are a knight's move from [x,y]
+<DL COMPACT><DT><DD>
+<B>knights_move [x,y] = {[i,j]; i,j&lt;-[1..8]; (i-x)**2 + (j-y)**2 == 5}</B>
+</DL>
+
+Searching the whole board in this way is not very efficient, but never mind.
+Note that `i,j&lt;-[1..8]' is shorthand for two generators with i, j
+both drawn from [1..8].
+<P>
+
+The general form of a ZF expression is
+<DL COMPACT><DT><DD>
+<B>{expression; qualifier; ... ; qualifier}</B>
+<BR>
+
+with one or more qualifiers, each of which is either a <I>generator</I>, of the form
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name-list &lt;- expression
+<BR>
+
+or a <I>filter</I>, which is an expression whose value is &quot;TRUE&quot; or &quot;FALSE&quot;.
+</DL>
+
+<P>
+
+If the first qualifier is a generator, which is usually the case,
+the initial `<B>;</B>' can be written `<B>|</B>', which aids readability.
+<P>
+
+For examples of programming with ZF expressions see
+David Turner's papers &quot;The Semantic Elegance of Applicative Languages'' (1981)
+and &quot;Recursion Equations as a Programming Language&quot; (1982).
+<P>
+
+(<B>Historical note</B>: The semantics of ZF expressions in KRC differ from
+those of modern list comprehensions
+in <I>interleaving</I> outputs of multiple generators
+to ensure that all combinations are eventually reached,
+even with two or more infinite generators.  The motivation was to make them behave
+more like set comprehensions, whence the use of {}.  List comprehensions
+with square brackets and the now familiar &quot;nested loop&quot; semantics first appeared
+in Miranda, in 1984.)
+<A NAME="lbAM">&nbsp;</A>
+<H2>THE PRELUDE</H2>
+
+When KRC is started it first loads the <B>prelude</B>, a library of standard definitions,
+most of which are in KRC but some are in machine code, including functions to access
+the operating system (e.g. <B>read</B>, <B>write</B>).
+<P>
+
+To list the names defined in the currently loaded prelude during a KRC session, type
+<DL COMPACT><DT><DD>
+<B>/lib</B>
+</DL>
+
+You can inspect any of the definitions by typing the name, e.g.
+<DL COMPACT><DT><DD>
+<B>map</B>
+</DL>
+
+Each has an comment explaining what it does, in addition to its defining equations.
+<P>
+
+The standard prelude is usually at <B>/usr/lib/krc/prelude</B> but may be placed
+elsewhere by the installer. To view the standard prelude in a KRC session, say
+&quot;<B>/help prelude</B>&quot;.
+<P>
+
+Another library in place of the standard prelude can be specified 
+on the command line when KRC is invoked by the option <B>-l </B><I>lib</I>.
+If you invoke KRC with option <B>-n</B>, no prelude is loaded.<P>
+
+If KRC is invoked with option <B>-L</B>, a legacy prelude
+is used in place of the standard one. To view this in a KRC session, say
+&quot;<B>/help lib1981</B>&quot;.
+<P>
+
+Note that without a prelude you cannot use ZF expressions,
+whose implementation requires <B>interleave</B>
+nor can you use the `<B>--</B>' operator, which
+requires the function <B>listdiff</B>.
+<A NAME="lbAN">&nbsp;</A>
+<H2>LINE EDITING AND ESCAPE TO UNIX SHELL</H2>
+
+<B>Line editing</B>: if KRC is compiled with the &quot;linenoise&quot; module,
+the arrow keys and other keys can be used to scroll back and forth through
+lines typed in a KRC session, to edit and resubmit them.
+For a summary of available key bindings, with and without &quot;linenoise&quot;,
+say <B>/help keys</B> in a KRC session.
+<P>
+
+<B>Escape to Unix shell</B>:
+type Ctrl-Z to suspend KRC and return to Unix command line,
+say <B>fg</B> to resume the KRC session.
+<A NAME="lbAO">&nbsp;</A>
+<H2>MAKING UNIX COMMANDS</H2>
+
+You can write a Unix command in KRC by making its script
+executable through the &quot;magic string&quot; mechanism. To do this,
+add a line as the start of the script, of the form:
+<DL COMPACT><DT><DD>
+#! /usr/bin/krc -e <I>expression</I>!
+</DL>
+
+where <I>expression</I> is to be evaluated when
+the program is run.  This can be a KRC expression
+of any complexity, terminated by `<B>?</B>' if its value is to be shown
+with its structure or `<B>!</B>' if it is to be flat-printed.
+<P>
+
+Other flags such as &quot;<B>-l&nbsp;</B><I>lib</I>&quot; for an alternative prelude,
+&quot;<B>-h&nbsp;</B><I>size</I>&quot; for a larger heap, can precede &quot;<B>-e</B>&quot;.
+<P>
+
+The name by which the script is called, followed by the command-line arguments
+that the user supplies when it is run,
+are placed in a list of strings called &quot;<B>argv</B>&quot;.
+<P>
+
+Example: A simple command to display the contents of files.
+Put the following 2 lines in a file called &quot;list&quot;.
+<DL COMPACT><DT><DD>
+<BR>&nbsp;#!&nbsp;/usr/bin/krc&nbsp;-e&nbsp;main!
+<BR>
+
+<BR>&nbsp;main&nbsp;=&nbsp;map&nbsp;read&nbsp;(tl&nbsp;argv)
+</DL>
+
+then make it executable
+<DL COMPACT><DT><DD>
+<BR>&nbsp;chmod&nbsp;+x&nbsp;list
+</DL>
+
+now you can use it, for example
+<DL COMPACT><DT><DD>
+<BR>&nbsp;./list&nbsp;list
+</DL>
+
+will display the contents of the file itself.
+<P>
+
+Any KRC script can be made executable by placing a &quot;magic string&quot; at the start.
+When used as the script in an interactive KRC session an initial line in `#!'
+is treated as a comment and ignored; it has effect only if the file is invoked
+as a command on the Unix command line.
+<A NAME="lbAP">&nbsp;</A>
+<H2>LANGUAGE CHANGES</H2>
+
+The KRC language described here is as David Turner designed it around 1980,
+except for the following changes.
+<P>
+
+The base for indexing lists has been changed from <B>1</B> to <B>0</B>.
+The option <B>-z</B> reverts to lists being indexed from 1 (this may be
+needed for legacy KRC scripts dating from the 1980's).
+<P>
+
+A revised prelude has been provided, with some more efficient definitions
+(e.g. <B>reverse</B>, <B>sort</B>) and a more modern collection
+of functions.
+A legacy prelude from 1981
+is also available (option <B>-L</B>).
+<P>
+
+Escape characters in strings, &quot;\n&quot; etc., as in C, have been added.
+KRC as originally designed used instead names for special characters: <B>nl</B>
+<B>np</B> <B>quote</B> <B>tab</B> <B>vt</B>,
+these remain in the prelude.  Example:
+instead of <B>&quot;123\tgo\n&quot;</B> you can say <B>[&quot;123&quot;,tab,&quot;go&quot;,nl]</B>
+to get the same effect with ``!''.
+<P>
+
+A distinction has been introduced between `<B>=</B>', definitional equals
+and `<B>==</B>' the equality test (KRC originally used `<B>=</B>' for both).
+<P>
+
+In-line comments, from &quot;||&quot; to end of line, have been added, thus
+<DL COMPACT><DT><DD>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;||&nbsp;this&nbsp;is&nbsp;a&nbsp;comment
+</DL>
+
+these don't fit very naturally with KRC's model  of  interactive  script
+development  as  they  are  discarded  when  entered  during a
+session.  But the facility is useful for scripts prepared  with  an  editor  as
+it allows comments on individual equations and on the whole script.
+<A NAME="lbAQ">&nbsp;</A>
+<H2>LEGACY SYNTAX</H2>
+
+With option <B>-z</B> these alternative operator forms are accepted
+and converted to their standard variants:
+<DL COMPACT><DT><DD>
+<B>~</B>  as a synonym for <B>\</B> (prefix <I>not</I>)
+<BR>
+
+<B>~=</B> as a synonym for <B>\=</B> (<I>not-equals</I>)
+<BR>
+
+<B>=</B> as a synonym for <B>==</B> (<I>equality test</I>)
+</DL>
+
+<A NAME="lbAR">&nbsp;</A>
+<H2>LIMITATIONS</H2>
+
+Guards do not work correctly with simple definitions, for example
+<DL COMPACT><DT><DD>
+feb = 29, leap_year
+<BR>
+
+&nbsp;&nbsp;&nbsp;&nbsp;= 28
+</DL>
+
+fails with strange error when leap_year=&quot;FALSE&quot;.
+The language as originally defined did not allow guards with simple
+definitions, only with functions.  The syntactic restriction has been removed
+but the corresponding semantics still needs fixing.
+<P>
+
+The length of a string limited to 255 characters.
+The space used by strings created during a session is never freed,
+mitigated only by the fact that multiple copies of the same
+string are shared. This means that programs which create a
+lot of temporary strings as part of their operation
+will soon run out of the space in which strings,
+identifiers, file names and comments are stored.  Note, however,
+that KRC's ``<B>!</B>'' output mode removes much of the need to create
+temporary strings.
+<P>
+
+Numbers are limited in range to that of the underlying processor's
+machine word, i.e. they are signed 32-bit or 64-bit integers.
+Calculations which exceed this range cause a run-time error.
+<P>
+
+If linenoise is enabled, multiline comments cannot be entered interactively
+in a KRC session.
+<A NAME="lbAS">&nbsp;</A>
+<H2>FILES</H2>
+
+<DL COMPACT>
+<DT><B>/usr/lib/krc/prelude</B><DD>
+The standard prelude.
+<DT><B>/usr/lib/krc/lib1981</B><DD>
+A legacy prelude dating from 1981 (invoked by option -L).
+</DL>
+<P>
+
+KRC looks for the prelude first in <B>./krclib</B> if present,
+then in <B>/usr/lib/krc</B> (this may be changed by the installer).
+<A NAME="lbAT">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<DL COMPACT>
+<DT><B><A HREF="http://krc-lang.org/">http://krc-lang.org/</A></B><DD>
+The KRC home page.
+<DT><B>Recursion Equations as a Programming Language</B>, D. A. Turner, January 1982<DD>
+This includes an overview of the KRC language and can be found at the above website.
+<DT><B><A HREF="http://github.com/antirez/linenoise">http://github.com/antirez/linenoise</A></B><DD>
+The &quot;linenoise&quot; line-editing module (the version included with the KRC sources has
+been lightly edited to configure it appropriately).
+</DL>
+<A NAME="lbAU">&nbsp;</A>
+<H2>AUTHOR</H2>
+
+The KRC system was designed by David Turner
+who implemented it in BCPL for the EMAS operating system from
+November 1979 to October 1981.
+<P>
+
+This implementation was created by translating the original BCPL sources into C for
+the Unix family of operating systems.
+<P>
+
+KRC is Copyright (c) D. A. Turner 1981 and is released under an open source license,
+for terms see the file &quot;COPYING&quot; included in the distribution.
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">OPTIONS</A><DD>
+<DT><A HREF="#lbAE">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAF">COMMANDS</A><DD>
+<DT><A HREF="#lbAG">EXPRESSION EVALUATION</A><DD>
+<DT><A HREF="#lbAH">THE SCRIPT: COMMENTS AND EQUATIONS</A><DD>
+<DT><A HREF="#lbAI">IDENTIFIERS</A><DD>
+<DT><A HREF="#lbAJ">DATA TYPES</A><DD>
+<DT><A HREF="#lbAK">OPERATORS</A><DD>
+<DT><A HREF="#lbAL">ZF EXPRESSIONS</A><DD>
+<DT><A HREF="#lbAM">THE PRELUDE</A><DD>
+<DT><A HREF="#lbAN">LINE EDITING AND ESCAPE TO UNIX SHELL</A><DD>
+<DT><A HREF="#lbAO">MAKING UNIX COMMANDS</A><DD>
+<DT><A HREF="#lbAP">LANGUAGE CHANGES</A><DD>
+<DT><A HREF="#lbAQ">LEGACY SYNTAX</A><DD>
+<DT><A HREF="#lbAR">LIMITATIONS</A><DD>
+<DT><A HREF="#lbAS">FILES</A><DD>
+<DT><A HREF="#lbAT">SEE ALSO</A><DD>
+<DT><A HREF="#lbAU">AUTHOR</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 13:56:38 GMT, June 18, 2023
+</BODY>
+</HTML>
