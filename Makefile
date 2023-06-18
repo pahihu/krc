@@ -1,5 +1,6 @@
 # makefile for Kent Recursive Calculator
 # (BCPL version translated into C)
+CC=clang -Wno-deprecated-declarations -Wno-implicit-function-declaration
 
 #alternatives
 #PREFIX=/usr/local

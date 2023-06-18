@@ -145,12 +145,12 @@ main(int argc, char **argv)
 // TWO COPIES OF LIST SPACE IN ORDER TO BE ABLE TO DO GARBAGE COLLECTIO
 // BY DOING A GRAPH COPY FROM ONE SPACE TO THE OTHER
       ATOMSPACE=DICMAX/atomsize;
-      CONSBASE=(LIST)sbrk(SPACE*sizeof(*CONSBASE));
+      CONSBASE=(LIST)realloc(CONSBASE,SPACE*sizeof(*CONSBASE));
       if (CONSBASE == (void *)-1) SPACE_ERROR("Not enough memory");
       CONSP=CONSBASE, CONSLIMIT=CONSBASE+SPACE;
-      OTHERBASE=(LIST)sbrk(SPACE*sizeof(*CONSBASE));
+      OTHERBASE=(LIST)malloc(SPACE*sizeof(*CONSBASE));
       if (OTHERBASE == (void *)-1) SPACE_ERROR("Not enough memory");
-      ATOMBASE=(ATOM)sbrk(ATOMSPACE*sizeof(*ATOMBASE));
+      ATOMBASE=(ATOM)realloc(ATOMBASE,ATOMSPACE*sizeof(*ATOMBASE));
       if (ATOMBASE == (void *)-1) SPACE_ERROR("Not enough memory");
       ATOMP=ATOMBASE; ATOMLIMIT=ATOMBASE+ATOMSPACE;
 

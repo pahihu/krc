@@ -6,6 +6,14 @@
 #include <stdlib.h>	// For exit()
 #include <limits.h>	// for __WORDSIZE
 
+#ifndef __WORDSIZE
+#ifdef __LP64__
+#define __WORDSIZE  64
+#else
+#define __WORDSIZE 32
+#endif
+#endif
+
 #if __WORDSIZE==64
 
 // Type for machine words, used for all integer variables.
